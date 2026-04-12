@@ -1,0 +1,1 @@
+first pass on data req. looks like the available data dumps don't have the match metadata, only surface level info like win/loss. reaching out to the api host to see if they have better dump available.
