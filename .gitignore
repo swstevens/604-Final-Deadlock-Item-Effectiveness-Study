@@ -1,3 +1,7 @@
 data/
 __pycache__/
 *.pyc
+.venv/
+*.docx
+ics604-S26-project_submission_rubric.pdf
+volcano_*.png
