@@ -20,42 +20,29 @@ Deadlock is a 6v6 competitive game by Valve where players purchase items through
 | Slowing Hex | Mina | Explicitly cited in guides |
 | Dispel Magic | Infernus | Considered an auto-buy |
 
+---
+
 ## Repository Structure
 
 ```
 .
-├── final.ipynb                      # Main analysis notebook (run this)
-├── requirements.txt                 # Python dependencies
+├── final.ipynb                          # Main analysis notebook
+├── volcano_plot.ipynb                   # All-hero item effectiveness volcano plot
+├── requirements.txt                     # Python dependencies
 ├── scripts/
-│   ├── collect_matches.py           # Pulls match data from deadlock-api.com
-│   ├── collect_matches_gap.py       # Fills gaps in collected match data
-│   ├── json_to_parquet.py           # Converts collected JSONL → Parquet
-│   └── read_parquet.py              # Utility for inspecting parquet files
-├── exploratory/                     # Earlier-stage analysis notebooks (not graded)
-├── data/                            # Dataset files (see Data section below)
-│   ├── public_items.parquet         # Item ID → name/tier/cost lookup (455 rows)
-│   └── public_heroes.parquet        # Hero ID → name lookup (38 heroes)
-└── deadlock_proposal_submission.pdf # Original project proposal
+│   ├── collect_matches.py               # Historical stratified dataset (~25k matches)
+│   ├── collect_matches_recent.py        # Most-recent N matches by rank band
+│   ├── collect_matches_gap.py           # Gap-fill utility for collect_matches.py
+│   ├── json_to_parquet.py               # Converts collected JSONL → Parquet
+│   └── read_parquet.py                  # Utility for inspecting parquet files
+├── data/                                # Dataset files (gitignored — see Data section)
+│   ├── public_items.parquet             # Item ID → name/tier/cost lookup (455 rows)
+│   └── public_heroes.parquet           # Hero ID → name lookup (38 heroes)
+├── exploratory/                         # Earlier-stage analysis notebooks
+└── deadlock_proposal_submission.pdf     # Original project proposal
 ```
 
-## Data
-
-Match data was collected from the [deadlock-api.com](https://api.deadlock-api.com) public API:
-
-- **Match metadata:** `https://api.deadlock-api.com/v1/matches/metadata?include_player_items=true`
-- **Item/hero lookups:** `https://files.deadlock-api.com/Default/buckets/db-snapshot/public/`
-
-The full collected dataset (`data/collected_matches.jsonl`) is ~12 GB and is not included in this repository. To reproduce data collection, run the scripts in order:
-
-```bash
-python scripts/collect_matches.py          # collect raw match JSON
-python scripts/collect_matches_gap.py      # fill any collection gaps
-python scripts/json_to_parquet.py          # convert to parquet for analysis
-```
-
-The lookup tables (`data/public_items.parquet`, `data/public_heroes.parquet`) are small and included in the repository.
-
-> The graders should contact the author for a copy of the processed parquet dataset if re-collection is not feasible.
+---
 
 ## Environment Setup
 
@@ -63,24 +50,97 @@ Python 3.11+ required.
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+---
+
+## Datasets
+
+There are four datasets used across the two notebooks, each collected by a different script invocation. The raw JSONL files are large and excluded from the repo — collect them before running the notebooks.
+
+| File | Script | Purpose |
+|---|---|---|
+| `data/collected_matches.jsonl` | `collect_matches.py` | Historical high-rank, stratified across the full Mina era (Aug 2025–Apr 2026). Used by `final.ipynb`. |
+| `data/collected_matches_gap.jsonl` | `collect_matches_gap.py` | Fills gaps in the historical dataset. Also used by `final.ipynb`. |
+| `data/collected_matches_recent_high.jsonl` | `collect_matches_recent.py --rank high` | Most recent 25k high-rank matches. Used by `volcano_plot.ipynb` with `RANK_MODE = 'high'`. |
+| `data/collected_matches_recent_low.jsonl` | `collect_matches_recent.py --rank low` | Most recent 25k low-rank matches. Used by `volcano_plot.ipynb` with `RANK_MODE = 'low'`. |
+
+### Collecting the data
+
+Run each command from the repo root with the virtual environment active. An API key is optional but increases the rate limit significantly.
+
+**Historical dataset** (for `final.ipynb`):
+```bash
+python scripts/collect_matches.py [--api-key YOUR_KEY]
+python scripts/collect_matches_gap.py [--api-key YOUR_KEY]
+```
+
+**Recent dataset** (for `volcano_plot.ipynb`):
+```bash
+python scripts/collect_matches_recent.py --rank high [--api-key YOUR_KEY]
+python scripts/collect_matches_recent.py --rank low  [--api-key YOUR_KEY]
+```
+
+Both `collect_matches_recent.py` runs are resumable — if interrupted, re-run the same command and it will continue from where it left off.
+
+The lookup tables (`data/public_items.parquet`, `data/public_heroes.parquet`) are small and already included in the repository.
+
+---
+
 ## Running the Analysis
 
-With the environment activated, launch Jupyter and open `final.ipynb`:
+Launch Jupyter from the repo root:
 
 ```bash
 jupyter lab
 ```
 
-Then run all cells top-to-bottom (**Kernel → Restart Kernel and Run All Cells**). All outputs and figures are pre-executed and visible in the committed notebook.
+### `final.ipynb` — Main analysis
 
-The notebook covers:
-1. Data loading and preprocessing
-2. Chi-square test of independence (purchase rate vs. target hero presence)
-3. Two-proportion Z-test (win rate with vs. without counter item, per skill tier)
-4. Logistic regression controlling for skill tier and hero identity
-5. Rolling 14-day correlation analysis
-6. Results summary and classification (Confirmed / Overrated / Undiscovered)
+Uses the **historical dataset** (`collected_matches.jsonl`). Requires no configuration changes before running.
+
+Before running, set `FIGURES_DIR` at the top of the notebook to control where plots are saved:
+
+| Data used | `FIGURES_DIR` setting |
+|---|---|
+| Historical (default) | `'figures'` |
+| Recent high-rank | `'figures/recent_high'` |
+
+Run: **Kernel → Restart Kernel and Run All Cells**
+
+Covers: hold rate & win rate, item purchase rates by hero, core builder vs situational buyer analysis, and a full all-hero item effectiveness volcano plot.
+
+### `volcano_plot.ipynb` — All-hero volcano plot
+
+Uses the **recent dataset**. Set two variables at the top of the notebook before running:
+
+| Variable | Options | Effect |
+|---|---|---|
+| `RANK_MODE` | `'high'` or `'low'` | Selects which recent dataset to load and which output folder to use |
+
+```python
+RANK_MODE = 'high'   # loads data/collected_matches_recent_high.jsonl
+                     # saves to figures/recent_high/
+```
+
+Run once with `RANK_MODE = 'high'`, then again with `'low'` to produce both plots.
+
+---
+
+## Output figures
+
+Figures are saved to the `figures/` directory (gitignored) when the notebooks are run:
+
+```
+figures/
+├── 01_hold_rate_win_rate.png
+├── 02_item_buy_rate_per_hero.png
+├── 03_core_vs_situational.png
+├── 04_volcano_high_rank.png
+├── recent_high/
+│   └── volcano_high_rank.png
+└── recent_low/
+    └── volcano_low_rank.png
+```

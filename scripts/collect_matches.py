@@ -1,19 +1,26 @@
 """
-Collects ~200k matches from the deadlock-api.com bulk metadata endpoint.
+Collects ~25k matches from the deadlock-api.com bulk metadata endpoint.
 
 Sampling strategy: weekly stratification across Aug 2025 – Apr 2026 (the full
-Mina era). The full period is divided into ~34 one-week windows and ~6,000
-matches are taken from the start of each window. This ensures even patch
-coverage and a consistent temporal basis for the 14-day rolling averages used
-in the secondary analysis, avoiding the bias of a pure start-of-month sample.
+Mina era). The full period is divided into ~34 one-week windows and ~750
+matches are taken from the start of each window (~25k total). This ensures
+even patch coverage and a consistent temporal basis for the 14-day rolling
+averages used in the secondary analysis.
+
+Pass --rank high to collect only high-rank matches (avg_badge ≥ 100 both
+teams). Pass --rank low for low-rank (avg_badge < 100). Default collects all.
 
 Match ID → date mapping derived from public_player_match_history.parquet.
 
-Output: data/collected_matches.jsonl  (one JSON object per line, one match per line)
+Output:
+    data/collected_matches_high.jsonl  (--rank high)
+    data/collected_matches_low.jsonl   (--rank low)
+    data/collected_matches.jsonl       (--rank all, default)
 
 Usage:
-    python3 collect_matches.py
-    python3 collect_matches.py --api-key YOUR_KEY_HERE
+    python3 collect_matches.py --rank high
+    python3 collect_matches.py --rank low
+    python3 collect_matches.py --rank high --api-key YOUR_KEY_HERE
 """
 
 import argparse
@@ -24,12 +31,13 @@ import urllib.error
 import urllib.request
 import urllib.parse
 
-API_BASE    = "https://api.deadlock-api.com"
-OUTPUT_FILE = "data/collected_matches.jsonl"
-USER_AGENT  = "Deadlock Counter Item Study Dataset Requests (@gohomecookrice)"
+API_BASE   = "https://api.deadlock-api.com"
+USER_AGENT = "Deadlock Counter Item Study Dataset Requests (@gohomecookrice)"
 
-BATCH_SIZE      = 1_000  # per request (server 500s above ~3k with player items included)
-TARGET_PER_WEEK = 6_000  # ~204k total across 34 weeks, ~6 requests per week
+HIGH_RANK_BADGE = 100
+
+BATCH_SIZE      =   500  # per request
+TARGET_PER_WEEK =   750  # ~25k total across 34 weeks
 
 # Weekly match ID boundaries derived from public_player_match_history.parquet.
 # Each tuple: (label, week_start_id, week_end_id)
@@ -82,8 +90,8 @@ WEEK_WINDOWS = [
 ]
 
 
-def fetch_batch(min_match_id, max_match_id, api_key=None):
-    params = urllib.parse.urlencode({
+def fetch_batch(min_match_id, max_match_id, api_key=None, rank=None):
+    base = {
         "include_player_info": "true",
         "include_player_items": "true",
         "include_player_kda": "true",
@@ -93,7 +101,12 @@ def fetch_batch(min_match_id, max_match_id, api_key=None):
         "order_by": "match_id",
         "order_direction": "asc",
         "limit": BATCH_SIZE,
-    }) + "&match_mode=ranked,unranked"
+    }
+    if rank == "high":
+        base["min_average_badge"] = HIGH_RANK_BADGE
+    elif rank == "low":
+        base["max_average_badge"] = HIGH_RANK_BADGE - 1
+    params = urllib.parse.urlencode(base) + "&match_mode=ranked,unranked"
     url = f"{API_BASE}/v1/matches/metadata?{params}"
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     if api_key:
@@ -102,25 +115,30 @@ def fetch_batch(min_match_id, max_match_id, api_key=None):
         return json.loads(resp.read().decode())
 
 
-def load_seen_weeks():
+def load_seen_weeks(output_file):
     """Returns set of week labels already fully collected."""
     seen = set()
-    progress_file = OUTPUT_FILE + ".progress"
+    progress_file = output_file + ".progress"
     if os.path.exists(progress_file):
         with open(progress_file) as f:
             seen = set(line.strip() for line in f if line.strip())
     return seen
 
 
-def mark_week_done(week_label):
-    with open(OUTPUT_FILE + ".progress", "a") as f:
+def mark_week_done(output_file, week_label):
+    with open(output_file + ".progress", "a") as f:
         f.write(week_label + "\n")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--api-key", default=None, help="deadlock-api.com API key")
+    parser.add_argument("--rank", choices=["high", "low", "all"], default="all",
+                        help="high: avg_badge ≥ 100 both teams; low: avg_badge < 100; all: no filter (default)")
     args = parser.parse_args()
+
+    output_file = (f"data/collected_matches_{args.rank}.jsonl"
+                   if args.rank != "all" else "data/collected_matches.jsonl")
 
     # Stay comfortably under the rate limit in both modes.
     # No key: limit is 10 req/min → wait 8s (75% of limit)
@@ -128,14 +146,15 @@ def main():
     delay = 1.5 if args.api_key else 8.0
 
     os.makedirs("data", exist_ok=True)
-    done_weeks = load_seen_weeks()
+    done_weeks = load_seen_weeks(output_file)
     remaining  = [w for w in WEEK_WINDOWS if w[0] not in done_weeks]
 
+    print(f"Output: {output_file}")
     print(f"Weeks complete: {len(done_weeks)}/{len(WEEK_WINDOWS)}")
     print(f"Weeks remaining: {len(remaining)}")
     print(f"Estimated requests: {len(remaining)}  |  delay: {delay}s  |  ETA: ~{len(remaining) * delay / 60:.1f} min\n")
 
-    with open(OUTPUT_FILE, "a") as out:
+    with open(output_file, "a") as out:
         for week_label, id_min, id_max in remaining:
             collected = 0
             cursor = id_min
@@ -146,7 +165,7 @@ def main():
                 batch = []
                 while True:
                     try:
-                        batch = fetch_batch(cursor, id_max, args.api_key)
+                        batch = fetch_batch(cursor, id_max, args.api_key, args.rank)
                         break
                     except urllib.error.HTTPError as e:
                         if e.code == 429:
@@ -178,12 +197,12 @@ def main():
                 print(f"  {len(batch):,} fetched  week_total={collected:,}  cursor={cursor:,}")
                 time.sleep(delay)
 
-            mark_week_done(week_label)
+            mark_week_done(output_file, week_label)
             print(f"  [{week_label}] done — {collected:,} matches\n")
 
     # Final count
-    total = sum(1 for _ in open(OUTPUT_FILE))
-    print(f"\nDone. {total:,} matches written to {OUTPUT_FILE}")
+    total = sum(1 for _ in open(output_file))
+    print(f"\nDone. {total:,} matches written to {output_file}")
 
 
 if __name__ == "__main__":
