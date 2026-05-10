@@ -1,0 +1,158 @@
+# Do Counter Items Actually Work? Testing Item Effectiveness in Valve's Deadlock
+
+**ICS 604: Applied Data Science - Final Project**
+
+---
+
+## Abstract
+
+<!-- ~100 words -->
+<!-- Cover: what game, what question, what method, key finding (high vs low rank disparity), one-sentence conclusion -->
+
+---
+
+## 1. Introduction
+
+Deadlock is a 6v6 competitive game by Valve in which players select a hero (a character with a unique ability kit) and purchase items throughout the match to strengthen their capabilities. Some items are widely considered "counter items" by the player community: purchases made specifically to neutralize a particular opposing hero. Players commonly buy movement-slowing items against mobile heroes, interrupt items against heroes with channeled abilities, and debuff-removal items against heroes that apply damage-over-time effects.
+
+These conventions are rooted in player intuition and community consensus. An item's apparent value as a counter may reflect a real win rate advantage, or it may be an artifact of skilled players buying it regardless of matchup. This project applies formal hypothesis testing to separate those two explanations.
+
+<!-- NOTE from proposal - original proposal studied 4 pairs (Knockdown/Dynamo, Disarming Hex/Haze, Slowing Hex/Mina, Dispel/Infernus). Final notebook studies 5: Metal Skin/Vyper was added to compare offensive vs reactive counter item types. Update this paragraph accordingly. -->
+
+This project investigates five counter item pairings selected for their strong community consensus:
+
+| Archetype | Character | Item |
+|---|---|---|
+| High Mobility | Mina | Slowing Hex |
+| Debuff / Damage over time | Infernus | Dispel Magic |
+| Channeled ability | Dynamo | Knockdown |
+| Weapon (reactive) | Vyper | Metal Skin |
+| Weapon (offensive) | Haze | Disarming Hex |
+
+The Vyper and Haze pairings are both weapon-oriented, allowing a secondary comparison between offensive and reactive counter item archetypes.
+
+**Research questions:**
+1. Is each counter item purchased at a significantly higher rate when its target hero is on the enemy team, compared to matches where that hero is absent?
+2. When a player buys a counter item against its target hero, is their win rate meaningfully higher than players who did not?
+3. Do the results confirm, refute, or complicate the community consensus on each counter relationship?
+4. Does counter item effectiveness differ across skill tiers?
+
+---
+
+## 2. Data & Methods
+
+<!-- NOTE from proposal - proposal described four skill tiers (Initiate–Arcanist / Ritualist–Archon / Oracle–Ascendant / Eternus) and rolling 14-day averages for temporal analysis. The actual implementation uses two rank bands only (high: avg_badge ≥ 100 both teams; low: otherwise), and no temporal analysis was performed. The proposal also described a Two-Proportion Z-Test (Step 2) and Logistic Regression (Step 3) - neither appears in final.ipynb. Use the methods below which reflect what was actually done. -->
+
+**Dataset.** Match data was collected from deadlock-api.com, an open-source platform providing bulk access to Deadlock match history sourced directly from Valve's match infrastructure. Approximately 25,000 recent matches were collected for each of two rank bands. Matches are classified as high-rank if the average badge score of both teams meets or exceeds 100 (the Oracle–Ascendant tier boundary); all other matches are classified as low-rank. The recent snapshot is used in place of a historical stratified sample to capture the current meta rather than patch-to-patch variation.
+
+<!-- NOTE - confirm the exact match counts when writing. The collection scripts target 25k per band but actual totals may vary. Check the data files or notebook output. -->
+
+**Situational buyer filter.** Heroes with a hold rate ≥ 20% for an item across all matchups are classified as core builders and excluded from the primary counter item analysis. Core builders are typically support-role heroes for whom the item is a role-appropriate purchase regardless of matchup - their consistent uplift reflects correct role execution, not counter-picking. Situational buyers are all other heroes, for whom the purchase represents a matchup-specific decision outside their expected role. Metal Skin is treated separately: as a defensive carry item, its core builders are carries rather than supports, making a situational purchase by non-carries even further outside its intended use case. This distinction reframes the filter not as noise removal but as a separation between role-appropriate and situational buying behavior.
+
+<!-- NOTE - if space allows, Figure 02_item_buy_rate_per_hero.png directly visualizes which heroes are core builders per item and makes the support-role argument concrete. Currently cut for page limit but worth referencing in a sentence if the figure appears. -->
+
+**Statistical tests.** For each hero × item pair, a 2×2 contingency table is constructed over situational buyer teams: item held (yes/no) × match outcome (win/loss), conditioned on the target hero being present on the enemy team. A chi-square test of independence (with Yates' continuity correction) is applied to test whether item possession is associated with winning. Effect size is reported as Cramér's V.
+
+**Relative lift.** Raw win rates for item holders are confounded by reactive purchasing behavior - players buy counter items when they are already losing, depressing the baseline win rate of holders below 50%. The primary effectiveness metric is therefore relative lift: ΔWR(enemy present) − ΔWR(enemy absent), where ΔWR = win rate(held) − win rate(not held). This isolates the matchup-specific contribution of the item above any general baseline effect.
+
+**All-hero volcano plot.** To contextualize the five studied pairs within the full item catalog, a chi-square test is run for every hero/item combination meeting minimum sample thresholds (≥ 20 games with item held, ≥ 5 without). Odds ratios and p-values are computed, with Benjamini-Hochberg FDR correction applied globally. Results are displayed as a volcano plot with log₂(OR) on the x-axis and −log₁₀(p_BH) on the y-axis. Pairs with p_BH < 0.05 and OR > 1.2 are classified as beneficial; OR < 1/1.2 as detrimental.
+
+---
+
+## 3. Results
+
+### 3.1 Hold Rate & Win Rate
+
+<!-- Takeaway: items ARE bought at elevated rates when the target hero is present (confirms RQ1).
+Raw win rates are below 50% for item holders - framing: reactive "stem the bleeding" purchases, not proactive advantages.
+Compare how hold rates and raw win rates differ between high and low rank. -->
+
+
+The five item/hero paint an intersting picture in all lobbies. When the character is present on the opposing team, and the item is purchased, in three of the 5 cases, we see a pronounced dropoff winrate. Metal skin, knockdown, and disarming hex show pronounced win rate decerases, regardless of whether the the item is bought by a frequent user or not. 
+
+With two items we see a slight shift in their winrates, although in both high and low ranks, the differential is within ~1.5% of neutral, and so would be considered insignificant.
+
+![Hold rate and win rate - high rank](figures/recent_high/01_hold_rate_win_rate.png)
+
+![Hold rate and win rate - low rank](figures/recent_low/01_hold_rate_win_rate.png)
+
+---
+
+### 3.2 Core Builders vs Situational Buyers
+
+<!-- Takeaway: core builders (supports in their intended role) show positive uplift - buying the item is part of their job and it shows in win rate.
+Once they are removed, situational buyers show little or negative uplift - buying outside your role doesn't help.
+This reframes the finding: counter items work when bought by the right hero archetype (support roles), not as a general matchup response.
+Metal Skin exception: its core builders are carries, not supports. Situational Metal Skin buyers are non-carries buying a carry-item defensively - even further from intended use, reflected in the most negative relative lift of all five pairs.
+Note: the buy rate by hero chart (02_item_buy_rate_per_hero.png) would visually reinforce this - it shows the specific heroes that are core builders. Consider including as a supplemental or inline reference if page budget allows. Otherwise, name the core builder heroes in prose (e.g. "heroes such as X and Y account for the bulk of Knockdown purchases regardless of matchup"). -->
+
+With these counter items, I wanted to investigate whether the purchaser of the item is significantly important. As we've established, there are many character archetypes. At higher levels, support oriented characters like Paige (who shows up very frequenctly as a core buyer of many of the items being tested) buy counter items at a significantly higher rate. This could be because it synergizes well with their kits, which are inherently oriented around trapping and disabling opponents to give teammates advantages, and are therefore tailoring their purchases to best thwart enemy players. 
+
+![Core builders vs situational buyers](figures/recent_high/03_core_vs_situational.png)
+
+---
+
+### 3.3 Summary Statistics
+
+<!-- Takeaway: show the table of Cramér's V, p-value, relative lift per pair.
+Call out: which pairs are statistically significant at high rank vs low rank.
+Note any p≈0 cases - explain these are floating-point underflow, not literally zero. -->
+
+<!-- Insert summary table here - copy from figures/recent_high/counter_item_summary.csv and figures/recent_low/counter_item_summary.csv -->
+
+---
+
+### 3.4 High Rank vs Low Rank Disparity
+
+<!-- CORE FINDING of the paper.
+Takeaway: at low rank, counter items show stronger and more consistent lifts with lower p-values.
+At high rank, signals shrink toward zero - counter items are less effective because skilled players already buy proactively or play around them, collapsing the measurable advantage.
+This is the key contribution: counter items "work" but their measurable benefit is arbitraged away at higher skill levels. -->
+
+When we compare high and low rank data, more interesting trends begin to form. 
+
+![Cross-rank comparison](figures/05_cross_rank_comparison.png)
+
+---
+
+### 3.5 All-Hero Volcano Plot
+
+In creating these individual chi square investigations, the larger picture should also be 
+<!-- Takeaway: zooming out beyond the five studied pairs, the pattern holds - significant counter relationships exist across the item catalog.
+Points above threshold line = statistically significant lift. Labeled top 10 by significance.
+Discuss what the shape of the cloud says about item balance broadly. -->
+
+![Volcano plot - high rank](figures/recent_high/04_volcano_high_rank.png)
+
+---
+
+## 4. Discussion
+
+<!-- Cover:
+- Why high-rank players show weaker counter-item signal: proactive buying, better game sense, playing around the item
+- "Stem the bleeding" framing: item holders are already in a losing position (hence sub-50% raw WR), relative lift is the right lens
+- From proposal classification criteria - which items are Confirmed / Overrated / Undiscovered:
+    Confirmed: significant elevation in both purchase rate and conditional win rate
+    Overrated: elevated purchase rate but no significant win rate lift
+    Undiscovered: significant win rate lift but purchase rate not meaningfully elevated
+- Limitations: observational data - can't establish causality; badge rank is a coarse proxy for skill; hero pool is small (5 of 38); Mina was released Aug 2025 so her sample history is shorter
+- Metal Skin vs Vyper negative relative lift - anti-pattern or confounding hero selection?
+- What this suggests for game design / player advice
+-->
+
+---
+
+## 5. Conclusion
+
+<!-- ~150 words -->
+<!-- Restate the question, summarize the findings, land on the rank-disparity insight as the key takeaway.
+Counter items show real but rank-dependent effectiveness - high-rank players have already priced in the counter, reducing measurable advantage. -->
+
+---
+
+## References
+
+<!-- deadlock-api.com data source -->
+<!-- Cramér's V citation -->
+<!-- BH correction citation (Benjamini & Hochberg, 1995) -->
+<!-- Any Deadlock patch notes or community sources cited -->
