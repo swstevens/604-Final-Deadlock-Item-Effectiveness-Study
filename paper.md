@@ -179,7 +179,7 @@ The mechanisms behind this disparity cannot be observed from these data slices a
 
 ### 3.5 All-Hero Volcano Plot
 
-In creating these individual chi square investigations, the larger picture should also be 
+Looking at the larger picture of item/hero matchups, we can observe where positive correlations begin to form. The stand out examples generally focus around damage output. Items like Boundless Spirit, which amplifies spirit damage output, and Silencer, which disables enemy weapon attacks, are direct ways that players can increase their damage output or neutralize opponents. That does not mean that there are no counter items present. We see two examples of hybrid/proactive counter items from higher tiers than our study focuses on: Silencer and Boundless Spirit. All items that appear in the highest positive correlation of the volcano graph are tier 4 items. Our study focuses on tier 3. Of the items that can be considered counter items at tier 4, the two that we observe in the volcano graph are dual purpose; they provide a proactive way to counter opponents (spirit burn reduces healing and silencer works similar to silence wave, but is applied by the hero's weapon) while still increase offensive capabilities. This would suggest that tier 3 items are meant to bridge the gap during the midgame to these higher tier items. 
 <!-- Takeaway: zooming out beyond the five studied pairs, the pattern holds - significant counter relationships exist across the item catalog.
 Points above threshold line = statistically significant lift. Labeled top 10 by significance.
 Discuss what the shape of the cloud says about item balance broadly. -->
@@ -201,6 +201,11 @@ Discuss what the shape of the cloud says about item balance broadly. -->
 - Metal Skin vs Vyper negative relative lift - anti-pattern or confounding hero selection?
 - What this suggests for game design / player advice
 -->
+Counter items in Deadlock show rank-dependent effectiveness that challenges the simplicity of community assumptions. Slowing Hex against Mina is the clearest confirmed counter relationship in this study as a statistically significant and practically meaningful effect that exists only for deliberate, situational purchases. Disarming Hex shows a real but marginal signal. The remaining three items show no positive counter effect at any rank.
+
+The broader pattern suggests that counter items function less as guaranteed advantages and more as skill expression tools. Their benefit is only measurable when purchased intentionally by the right player in the right matchups. This aligns with the volcano plot finding that damage-oriented items dominate the significant positive correlations across the full item catalog, suggesting that raw offensive output may be more reliably impactful than reactive itemization depending on character archetype.
+
+Several limitations apply. This analysis is limited to a single tier of each counter item and does not account for players who sold the studied items in favor of a higher-tier equivalent. Match outcome is an imperfect proxy for item effectiveness, as a single purchase cannot be isolated from team composition and overall game state. Badge rank is a coarse skill proxy, and the case studies covers only 5 of 38 available hero item combinations. Future work could correlate item activations logs with takedowns to test whether execution, not just ownership, drives the rank disparity observed here.
 
 ---
 
@@ -209,6 +214,7 @@ Discuss what the shape of the cloud says about item balance broadly. -->
 <!-- ~150 words -->
 <!-- Restate the question, summarize the findings, land on the rank-disparity insight as the key takeaway.
 Counter items show real but rank-dependent effectiveness - high-rank players have already priced in the counter, reducing measurable advantage. -->
+This study examined whether purchasing counter items in Deadlock meaningfully improved win rate when facing specific enemy heroes across two rank brackets. We found that counter item effectiveness is neither consistent nor universal. Slowing Hex against Mina was the only pairing to show a statistically significant positive relationship in high rank play (+5.7%), while Disarming Hex against Haze showed a modest but reliable effect. The remaining items produced no meaningful change or were associated with worse outcomes, likely reflecting reactive purchases from losing positions. The largest discovery is that these effets are stronger at higher ranks, suggesting that effectice counter-itemization is a form of skill expression rather than a general purpose tool. Future work should examine a broader item pool, control for team composition, and explore counter-item purchase times and usage over the course of the match. 
 
 ---
 
