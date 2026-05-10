@@ -99,7 +99,13 @@ Note: the buy rate by hero chart (02_item_buy_rate_per_hero.png) would visually 
 With these counter items, I wanted to investigate whether the purchaser of the item is significantly important. As we've established, there are many character archetypes. At higher levels, support oriented characters like Paige (who shows up very frequenctly as a core buyer of many of the items being tested) buy counter items at a significantly higher rate. This could be because it synergizes well with their kits, which are inherently oriented around trapping and disabling opponents to give teammates advantages, and are therefore tailoring their purchases to best thwart enemy players. 
 
 
-We see a particularly interesting trend with situational buyers when it comes to Slowing Hex and Mina. Among situational buyers, Slowing Hex holders facing Mina won 5.7% more frequently than non-holders (p = 0.029, V = 0.053). This suggests that characters that are frequent buyers of slowing hex rely on the item to fill gaps in their abilities, whether that is keeping enemies close or facilitating getaways. For situational buyeres however, we see a 
+We see a particularly interesting trend with situational buyers when it comes to Slowing Hex and Mina. Among situational buyers, Slowing Hex holders facing Mina won 5.7% more frequently than non-holders (p = 0.029, V = 0.053). This suggests that core builders of slowing hex rely on the item to fill gaps in their abilities, and the presence of a character that exacerbates those weaknesses reduces winrate, even when the item is purchased. For situational buyers however, we see a notable increase in winrate of +5.7% when Mina is present, compared to no change when she is absent.
+
+For Dispel Magic, we see a different story. When core builders are present, the winrate increases. This is in stark contrast to slowing hex, where core builders suffered due to character presence. Situational buyers also show a modest benefit from the purchase, improving by 4.5% when Infernus is present compared to when he is absent, though this result does not reach statistical significance (p = 0.951).
+
+Again with both weapon counter items, we see a significant dropoff when comparing whether the enemy is present or not. This is compounded by the data point that there are no core builders of either of these items. Metal Skin holders see a -8.1% delta when Vyper is absent, worsening to -10.3% when she is present. Disarming Hex holders drop from -9.6% to -8.6% — a marginal improvement but still deeply negative. This suggests that purchasing these items might offer a slight edge at the margin, but they remain less effective than buying a higher tier counter item.
+
+Knockdown presents the clearest case of community consensus unsupported by data. At high rank, situational buyers see a relative lift of -1.1% when Dynamo is present — not statistically significant (p = 0.135). At low rank the lift is essentially zero (+0.03%), and while statistically significant (p = 0.011), the effect size is negligible. Unlike Slowing Hex, where a clear situational signal emerged, Knockdown shows no meaningful counter effect at either rank. The data neither confirms nor refutes its community reputation — it simply finds no effect worth measuring.
 
 ![Core builders vs situational buyers](figures/recent_high/03_core_vs_situational.png)
 
@@ -111,7 +117,36 @@ We see a particularly interesting trend with situational buyers when it comes to
 Call out: which pairs are statistically significant at high rank vs low rank.
 Note any p≈0 cases - explain these are floating-point underflow, not literally zero. -->
 
-<!-- Insert summary table here - copy from figures/recent_high/counter_item_summary.csv and figures/recent_low/counter_item_summary.csv -->
+<table>
+<tr>
+<td>
+
+**High Rank**
+
+| Hero | Item | ΔWR (absent) | ΔWR (present) | Relative lift | Cramér's V | p-value |
+|---|---|---|---|---|---|---|
+| Mina | Slowing Hex | 0.0% | +5.7% | +5.7% | 0.053 | 0.029 |
+| Infernus | Dispel Magic | -3.6% | +0.9% | +4.6% | 0.003 | 0.951 |
+| Haze | Disarming Hex | -9.6% | -8.4% | +1.2% | 0.060 | 0.000 |
+| Dynamo | Knockdown | -2.6% | -2.7% | -0.0% | 0.019 | 0.135 |
+| Vyper | Metal Skin | -8.1% | -10.3% | -2.2% | 0.102 | 0.000 |
+
+</td>
+<td>
+
+**Low Rank**
+
+| Hero | Item | ΔWR (absent) | ΔWR (present) | Relative lift | Cramér's V | p-value |
+|---|---|---|---|---|---|---|
+| Dynamo | Knockdown | -3.9% | -3.9% | +0.0% | 0.031 | 0.011 |
+| Infernus | Dispel Magic | -0.4% | -0.7% | -0.3% | 0.006 | 0.732 |
+| Haze | Disarming Hex | -9.7% | -11.6% | -1.9% | 0.084 | 0.000 |
+| Mina | Slowing Hex | -2.7% | -4.8% | -2.1% | 0.042 | 0.004 |
+| Vyper | Metal Skin | -10.4% | -13.7% | -3.3% | 0.123 | 0.000 |
+
+</td>
+</tr>
+</table>
 
 ---
 
