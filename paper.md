@@ -68,9 +68,19 @@ Raw win rates are below 50% for item holders - framing: reactive "stem the bleed
 Compare how hold rates and raw win rates differ between high and low rank. -->
 
 
-The five item/hero paint an intersting picture in all lobbies. When the character is present on the opposing team, and the item is purchased, in three of the 5 cases, we see a pronounced dropoff winrate. Metal skin, knockdown, and disarming hex show pronounced win rate decerases, regardless of whether the the item is bought by a frequent user or not. 
 
-With two items we see a slight shift in their winrates, although in both high and low ranks, the differential is within ~1.5% of neutral, and so would be considered insignificant.
+
+When looking at the win rate and hold rate of each item in isolation, we see very different results. The effectiveness varies wildly, with weapon centric counter items putting players at an active disadvantage, slowing hex showing promise for situational buyers only, knockdown being potentially useful but negligible on winrate, and dispel magic showing minimal overall impact.
+
+With hold rate and win rate, dispel magic stands out as the most interesting case study. At high and low ranks, the effect on winrate depending on infernus presence is minimal. At high ranks we see an improvement from -0.2% to +1.7%. The more interesting statistic though is the purchase rate. At high ranks, among heroes that frequently buy the item, the purchase of Dispel Magic jumps to 73.8%. As will be shown later, there are characters that overly buy these items, what will be termed as frequent buyers. The high prevalence of this item suggests that CC is very important to the metagame and balance, and that using dispel magic in the right moments is also imperative.
+
+When looking at slowing hex we observe differing patterns across ranks. Buy rate drops from 57% at high rank to 40% at low rank, and the win rate delta shifts from -1.0% at high rank to +0.5% at low rank — negligible in both cases. This initially suggests that slowing hex does not have a big impact on the matchup, but we will discuss some further findings in the next section.
+
+Both selected weapon counter items perform similarly poor in overall win rate/hold rate statistics. At high rank, Metal Skin holders win 8.5% less often than non-holders, and Disarming Hex holders win 9.2% less often. At low rank these deficits widen to -10.6% and -10.7% respectively. With high rank players we observe that these items are still ineffective and paint a picture of poor performance.
+
+Finally, Knockdown is the most neutral of these items, with a negative delta of -3.4% at high rank and -3.5% at low rank, and a consistent purchase rate of ~22%. This purchase rate is lower than other items present in this analysis, suggesting that the item is reserved for specific hero synergies or hero counters. 
+
+
 
 ![Hold rate and win rate - high rank](figures/recent_high/01_hold_rate_win_rate.png)
 
@@ -87,6 +97,9 @@ Metal Skin exception: its core builders are carries, not supports. Situational M
 Note: the buy rate by hero chart (02_item_buy_rate_per_hero.png) would visually reinforce this - it shows the specific heroes that are core builders. Consider including as a supplemental or inline reference if page budget allows. Otherwise, name the core builder heroes in prose (e.g. "heroes such as X and Y account for the bulk of Knockdown purchases regardless of matchup"). -->
 
 With these counter items, I wanted to investigate whether the purchaser of the item is significantly important. As we've established, there are many character archetypes. At higher levels, support oriented characters like Paige (who shows up very frequenctly as a core buyer of many of the items being tested) buy counter items at a significantly higher rate. This could be because it synergizes well with their kits, which are inherently oriented around trapping and disabling opponents to give teammates advantages, and are therefore tailoring their purchases to best thwart enemy players. 
+
+
+We see a particularly interesting trend with situational buyers when it comes to Slowing Hex and Mina. Among situational buyers, Slowing Hex holders facing Mina won 5.7% more frequently than non-holders (p = 0.029, V = 0.053). This suggests that characters that are frequent buyers of slowing hex rely on the item to fill gaps in their abilities, whether that is keeping enemies close or facilitating getaways. For situational buyeres however, we see a 
 
 ![Core builders vs situational buyers](figures/recent_high/03_core_vs_situational.png)
 
