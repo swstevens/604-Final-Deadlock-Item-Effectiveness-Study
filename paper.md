@@ -117,6 +117,14 @@ Knockdown presents the clearest case of community consensus unsupported by data.
 Call out: which pairs are statistically significant at high rank vs low rank.
 Note any p≈0 cases - explain these are floating-point underflow, not literally zero. -->
 
+When we calculate p-value and Cramér's V for the different hero/item pairings, our initial observations become clearer. We also see clearer distinctions between high and low ranks.
+
+---
+
+#### Condensed alternative (for consideration)
+
+At low rank, no item shows a positive counter effect. Slowing Hex sits at -2.1% (p = 0.004) and the weapon items carry their deepest negative correlations. Moving to high rank, two items emerge with positive lifts: Slowing Hex rises to +5.7% (p = 0.029), confirming a genuine counter effect for situational buyers, and Disarming Hex reaches +1.2% — statistically significant but practically marginal against a -8.4% baseline. Dispel Magic shows a large positive delta at high rank but an effectively null p-value, making it inconclusive. Metal Skin and Knockdown show no meaningful counter effect at either rank.
+
 <table>
 <tr>
 <td>
@@ -138,11 +146,13 @@ Note any p≈0 cases - explain these are floating-point underflow, not literally
 
 | Hero | Item | ΔWR (absent) | ΔWR (present) | Relative lift | Cramér's V | p-value |
 |---|---|---|---|---|---|---|
-| Dynamo | Knockdown | -3.9% | -3.9% | +0.0% | 0.031 | 0.011 |
+| Mina | Slowing Hex | -2.7% | -4.8% | -2.1% | 0.042 | 0.004 |
 | Infernus | Dispel Magic | -0.4% | -0.7% | -0.3% | 0.006 | 0.732 |
 | Haze | Disarming Hex | -9.7% | -11.6% | -1.9% | 0.084 | 0.000 |
-| Mina | Slowing Hex | -2.7% | -4.8% | -2.1% | 0.042 | 0.004 |
+| Dynamo | Knockdown | -3.9% | -3.9% | +0.0% | 0.031 | 0.011 |
 | Vyper | Metal Skin | -10.4% | -13.7% | -3.3% | 0.123 | 0.000 |
+
+
 
 </td>
 </tr>
@@ -157,7 +167,11 @@ Takeaway: at low rank, counter items show stronger and more consistent lifts wit
 At high rank, signals shrink toward zero - counter items are less effective because skilled players already buy proactively or play around them, collapsing the measurable advantage.
 This is the key contribution: counter items "work" but their measurable benefit is arbitraged away at higher skill levels. -->
 
-When we compare high and low rank data, more interesting trends begin to form. 
+Across all five item pairings, counter item effectiveness trends upwards for high rank players. As we see with Disarming Hex, in some cases the effect even reverses.
+
+Slowing Hex and Disarming Hex are the clearest examples of this. At high ranks, players see a +5.7% lift when purchasing Slowing Hex against Mina (p = 0.029). At low rank, the same matchup shows a -2.1% lift (p = 0.004), which is a significant result in the opposite direction. In a similar fashion with Disarming Hex, we see a statistically real signal against a deeply negative baseline of 8.4%. This is potentially compounded by Haze's general strength in the window used for statistics calculation. Metal Skin winrate improves from -3.3% to -2.2% when moving from low to high ranks. Knockdown is a notable exception. Its relative lift is effectively zero at both high and low ranks, suggesting rank has no bearing on the item's counter effectiveness or lack thereof.
+
+The mechanisms behind this disparity cannot be observed from these data slices alone. Possible explanations include differences in active item execution between skill tiers, variation in purchasing intent, or the degree to which players capitalize on items once acquired. Disentangling these would require more granular data exploration such as correlation between item activations and takedowns, which is outside the scope of this analysis.
 
 ![Cross-rank comparison](figures/05_cross_rank_comparison.png)
 
