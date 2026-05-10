@@ -97,8 +97,6 @@ Knockdown presents the clearest case of community consensus unsupported by data.
 
 When we calculate p-value and Cramér's V for the different hero/item pairings, our initial observations become clearer. We also see clearer distinctions between high and low ranks.
 
----
-
 At low rank, no item shows a positive counter effect. Slowing Hex sits at -2.1% (p = 0.004) and the weapon items carry their deepest negative correlations. Moving to high rank, two items emerge with positive lifts: Slowing Hex rises to +5.7% (p = 0.029), confirming a genuine counter effect for situational buyers, and Disarming Hex reaches +1.2% — statistically significant but practically marginal against a -8.4% baseline. Dispel Magic shows a large positive delta at high rank but an effectively null p-value, making it inconclusive. Metal Skin and Knockdown show no meaningful counter effect at either rank.
 
 <table>
