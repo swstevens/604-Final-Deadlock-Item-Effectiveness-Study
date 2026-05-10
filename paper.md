@@ -43,7 +43,7 @@ The Vyper and Haze pairings are both weapon-oriented, allowing a secondary compa
 
 <!-- NOTE from proposal - proposal described four skill tiers (Initiate–Arcanist / Ritualist–Archon / Oracle–Ascendant / Eternus) and rolling 14-day averages for temporal analysis. The actual implementation uses two rank bands only (high: avg_badge ≥ 100 both teams; low: otherwise), and no temporal analysis was performed. The proposal also described a Two-Proportion Z-Test (Step 2) and Logistic Regression (Step 3) - neither appears in final.ipynb. Use the methods below which reflect what was actually done. -->
 
-**Dataset.** Match data was collected from deadlock-api.com, an open-source platform providing bulk access to Deadlock match history sourced directly from Valve's match infrastructure. Approximately 25,000 recent matches were collected for each of two rank bands. Matches are classified as high-rank if the average badge score of both teams meets or exceeds 100 (the Oracle–Ascendant tier boundary); all other matches are classified as low-rank. The recent snapshot is used in place of a historical stratified sample to capture the current meta rather than patch-to-patch variation.
+**Dataset.** Match data was collected from deadlock-api.com, an open-source platform providing bulk access to Deadlock match history sourced directly from Valve's match infrastructure. Approximately 25,000 recent matches were collected for each of two rank bands. Each match record contains player-level fields including hero selection, team assignment, end-of-game item inventory, sale timestamps, and match outcome. Matches are classified as high-rank if the average badge score of both teams meets or exceeds 100 (the Oracle–Ascendant tier boundary); all other matches are classified as low-rank. Items flagged as sold before match end (via non-zero `sold_time_s`) are excluded from hold counts. The recent snapshot is used in place of a historical stratified sample to capture the current meta rather than patch-to-patch variation.
 
 <!-- NOTE - confirm the exact match counts when writing. The collection scripts target 25k per band but actual totals may vary. Check the data files or notebook output. -->
 
@@ -72,19 +72,21 @@ Compare how hold rates and raw win rates differ between high and low rank. -->
 
 When looking at the win rate and hold rate of each item in isolation, we see very different results. The effectiveness varies wildly, with weapon centric counter items putting players at an active disadvantage, slowing hex showing promise for situational buyers only, knockdown being potentially useful but negligible on winrate, and dispel magic showing minimal overall impact.
 
-With hold rate and win rate, dispel magic stands out as the most interesting case study. At high and low ranks, the effect on winrate depending on infernus presence is minimal. At high ranks we see an improvement from -0.2% to +1.7%. The more interesting statistic though is the purchase rate. At high ranks, among heroes that frequently buy the item, the purchase of Dispel Magic jumps to 73.8%. As will be shown later, there are characters that overly buy these items, what will be termed as frequent buyers. The high prevalence of this item suggests that CC is very important to the metagame and balance, and that using dispel magic in the right moments is also imperative.
+With hold rate and win rate, dispel magic stands out as the most interesting case study. At high and low ranks, the effect on winrate depending on infernus presence is minimal. At high ranks we see an improvement from -0.2% to +1.7%. The more interesting statistic though is the purchase rate. At high ranks, among heroes that frequently buy the item, the purchase of Dispel Magic jumps to 73.8%. As will be shown later, there are characters that overly buy these items, what will be termed as frequent buyers. The high prevalence of this item suggests that crowd control (CC) is very important to the metagame and balance, and that using dispel magic in the right moments is also imperative.
 
 When looking at slowing hex we observe differing patterns across ranks. Buy rate drops from 57% at high rank to 40% at low rank, and the win rate delta shifts from -1.0% at high rank to +0.5% at low rank — negligible in both cases. This initially suggests that slowing hex does not have a big impact on the matchup, but we will discuss some further findings in the next section.
 
-Both selected weapon counter items perform similarly poor in overall win rate/hold rate statistics. At high rank, Metal Skin holders win 8.5% less often than non-holders, and Disarming Hex holders win 9.2% less often. At low rank these deficits widen to -10.6% and -10.7% respectively. With high rank players we observe that these items are still ineffective and paint a picture of poor performance.
+Both selected weapon counter items perform similarly poorly in overall win rate/hold rate statistics. At high rank, Metal Skin holders win 8.5% less often than non-holders, and Disarming Hex holders win 9.2% less often. At low rank these deficits widen to -10.6% and -10.7% respectively. With high rank players we observe that these items are still ineffective and paint a picture of poor performance.
 
 Finally, Knockdown is the most neutral of these items, with a negative delta of -3.4% at high rank and -3.5% at low rank, and a consistent purchase rate of ~22%. This purchase rate is lower than other items present in this analysis, suggesting that the item is reserved for specific hero synergies or hero counters. 
 
 
 
 ![Hold rate and win rate - high rank](figures/recent_high/01_hold_rate_win_rate.png)
+**Figure 1:** Hold rate (top) and win rate delta vs non-holders (bottom) for each counter item across all matchups at high rank.
 
 ![Hold rate and win rate - low rank](figures/recent_low/01_hold_rate_win_rate.png)
+**Figure 2:** Hold rate and win rate delta at low rank.
 
 ---
 
@@ -96,7 +98,7 @@ This reframes the finding: counter items work when bought by the right hero arch
 Metal Skin exception: its core builders are carries, not supports. Situational Metal Skin buyers are non-carries buying a carry-item defensively - even further from intended use, reflected in the most negative relative lift of all five pairs.
 Note: the buy rate by hero chart (02_item_buy_rate_per_hero.png) would visually reinforce this - it shows the specific heroes that are core builders. Consider including as a supplemental or inline reference if page budget allows. Otherwise, name the core builder heroes in prose (e.g. "heroes such as X and Y account for the bulk of Knockdown purchases regardless of matchup"). -->
 
-With these counter items, I wanted to investigate whether the purchaser of the item is significantly important. As we've established, there are many character archetypes. At higher levels, support oriented characters like Paige (who shows up very frequenctly as a core buyer of many of the items being tested) buy counter items at a significantly higher rate. This could be because it synergizes well with their kits, which are inherently oriented around trapping and disabling opponents to give teammates advantages, and are therefore tailoring their purchases to best thwart enemy players. 
+With these counter items, we sought to investigate whether the identity of the purchaser matters. As we've established, there are many character archetypes. At higher levels, support-oriented characters like Paige (who shows up very frequently as a core buyer of many of the items being tested) buy counter items at a significantly higher rate. This could be because it synergizes well with their kits, which are inherently oriented around trapping and disabling opponents to give teammates advantages, and are therefore tailoring their purchases to best thwart enemy players. 
 
 
 We see a particularly interesting trend with situational buyers when it comes to Slowing Hex and Mina. Among situational buyers, Slowing Hex holders facing Mina won 5.7% more frequently than non-holders (p = 0.029, V = 0.053). This suggests that core builders of slowing hex rely on the item to fill gaps in their abilities, and the presence of a character that exacerbates those weaknesses reduces winrate, even when the item is purchased. For situational buyers however, we see a notable increase in winrate of +5.7% when Mina is present, compared to no change when she is absent.
@@ -108,6 +110,7 @@ Again with both weapon counter items, we see a significant dropoff when comparin
 Knockdown presents the clearest case of community consensus unsupported by data. At high rank, situational buyers see a relative lift of -1.1% when Dynamo is present — not statistically significant (p = 0.135). At low rank the lift is essentially zero (+0.03%), and while statistically significant (p = 0.011), the effect size is negligible. Unlike Slowing Hex, where a clear situational signal emerged, Knockdown shows no meaningful counter effect at either rank. The data neither confirms nor refutes its community reputation — it simply finds no effect worth measuring.
 
 ![Core builders vs situational buyers](figures/recent_high/03_core_vs_situational.png)
+**Figure 3:** Win rate for core builder teams (top row) vs situational buyer teams (bottom row), conditioned on target hero presence, at high rank.
 
 ---
 
@@ -120,8 +123,6 @@ Note any p≈0 cases - explain these are floating-point underflow, not literally
 When we calculate p-value and Cramér's V for the different hero/item pairings, our initial observations become clearer. We also see clearer distinctions between high and low ranks.
 
 ---
-
-#### Condensed alternative (for consideration)
 
 At low rank, no item shows a positive counter effect. Slowing Hex sits at -2.1% (p = 0.004) and the weapon items carry their deepest negative correlations. Moving to high rank, two items emerge with positive lifts: Slowing Hex rises to +5.7% (p = 0.029), confirming a genuine counter effect for situational buyers, and Disarming Hex reaches +1.2% — statistically significant but practically marginal against a -8.4% baseline. Dispel Magic shows a large positive delta at high rank but an effectively null p-value, making it inconclusive. Metal Skin and Knockdown show no meaningful counter effect at either rank.
 
@@ -174,17 +175,19 @@ Slowing Hex and Disarming Hex are the clearest examples of this. At high ranks, 
 The mechanisms behind this disparity cannot be observed from these data slices alone. Possible explanations include differences in active item execution between skill tiers, variation in purchasing intent, or the degree to which players capitalize on items once acquired. Disentangling these would require more granular data exploration such as correlation between item activations and takedowns, which is outside the scope of this analysis.
 
 ![Cross-rank comparison](figures/05_cross_rank_comparison.png)
+**Figure 4:** Relative lift (ΔWR present − ΔWR absent) for each counter item pairing at low rank (left, red) and high rank (right, blue).
 
 ---
 
 ### 3.5 All-Hero Volcano Plot
 
-Looking at the larger picture of item/hero matchups, we can observe where positive correlations begin to form. The stand out examples generally focus around damage output. Items like Boundless Spirit, which amplifies spirit damage output, and Silencer, which disables enemy weapon attacks, are direct ways that players can increase their damage output or neutralize opponents. That does not mean that there are no counter items present. We see two examples of hybrid/proactive counter items from higher tiers than our study focuses on: Silencer and Boundless Spirit. All items that appear in the highest positive correlation of the volcano graph are tier 4 items. Our study focuses on tier 3. Of the items that can be considered counter items at tier 4, the two that we observe in the volcano graph are dual purpose; they provide a proactive way to counter opponents (spirit burn reduces healing and silencer works similar to silence wave, but is applied by the hero's weapon) while still increase offensive capabilities. This would suggest that tier 3 items are meant to bridge the gap during the midgame to these higher tier items. 
+Looking at the larger picture of item/hero matchups, we can observe where positive correlations begin to form. The standout examples generally focus around damage output. Items like Boundless Spirit, which amplifies spirit damage, and Silencer, which disables enemy weapon attacks, are direct ways that players can increase offensive output or neutralize opponents. All items appearing among the highest positive correlations in the volcano graph are tier 4 items. Our study focuses on tier 3. Of the tier 4 items that function as counter items, the two we observe in the volcano graph are dual purpose: they provide a proactive way to counter opponents (Boundless Spirit suppresses healing via spirit damage; Silencer functions like a weapon-applied silence, disabling enemy attacks) while still increasing offensive capabilities. This would suggest that tier 3 counter items are intended to bridge the gap during the midgame toward these higher-tier options. 
 <!-- Takeaway: zooming out beyond the five studied pairs, the pattern holds - significant counter relationships exist across the item catalog.
 Points above threshold line = statistically significant lift. Labeled top 10 by significance.
 Discuss what the shape of the cloud says about item balance broadly. -->
 
 ![Volcano plot - high rank](figures/recent_high/04_volcano_high_rank.png)
+**Figure 5:** All-hero item effectiveness volcano plot at high rank. Blue = beneficial (OR > 1.2, p_BH < 0.05); red = detrimental; orange = significant but small effect. Top 10 pairs by statistical significance are labeled.
 
 ---
 
@@ -205,7 +208,7 @@ Counter items in Deadlock show rank-dependent effectiveness that challenges the 
 
 The broader pattern suggests that counter items function less as guaranteed advantages and more as skill expression tools. Their benefit is only measurable when purchased intentionally by the right player in the right matchups. This aligns with the volcano plot finding that damage-oriented items dominate the significant positive correlations across the full item catalog, suggesting that raw offensive output may be more reliably impactful than reactive itemization depending on character archetype.
 
-Several limitations apply. This analysis is limited to a single tier of each counter item and does not account for players who sold the studied items in favor of a higher-tier equivalent. Match outcome is an imperfect proxy for item effectiveness, as a single purchase cannot be isolated from team composition and overall game state. Badge rank is a coarse skill proxy, and the case studies covers only 5 of 38 available hero item combinations. Future work could correlate item activations logs with takedowns to test whether execution, not just ownership, drives the rank disparity observed here.
+Several limitations apply. This analysis is limited to a single tier of each counter item and does not account for players who sold the studied items in favor of a higher-tier equivalent. Match outcome is an imperfect proxy for item effectiveness, as a single purchase cannot be isolated from team composition and overall game state. Badge rank is a coarse skill proxy, and the case studies cover only 5 of 38 available hero item combinations. Future work could correlate item activation logs with takedowns to test whether execution, not just ownership, drives the rank disparity observed here.
 
 ---
 
@@ -214,13 +217,20 @@ Several limitations apply. This analysis is limited to a single tier of each cou
 <!-- ~150 words -->
 <!-- Restate the question, summarize the findings, land on the rank-disparity insight as the key takeaway.
 Counter items show real but rank-dependent effectiveness - high-rank players have already priced in the counter, reducing measurable advantage. -->
-This study examined whether purchasing counter items in Deadlock meaningfully improved win rate when facing specific enemy heroes across two rank brackets. We found that counter item effectiveness is neither consistent nor universal. Slowing Hex against Mina was the only pairing to show a statistically significant positive relationship in high rank play (+5.7%), while Disarming Hex against Haze showed a modest but reliable effect. The remaining items produced no meaningful change or were associated with worse outcomes, likely reflecting reactive purchases from losing positions. The largest discovery is that these effets are stronger at higher ranks, suggesting that effectice counter-itemization is a form of skill expression rather than a general purpose tool. Future work should examine a broader item pool, control for team composition, and explore counter-item purchase times and usage over the course of the match. 
+This study examined whether purchasing counter items in Deadlock meaningfully improved win rate when facing specific enemy heroes across two rank brackets. We found that counter item effectiveness is neither consistent nor universal. Slowing Hex against Mina was the only pairing to show a statistically significant positive relationship in high rank play (+5.7%), while Disarming Hex against Haze showed a modest but reliable effect. The remaining items produced no meaningful change or were associated with worse outcomes, likely reflecting reactive purchases from losing positions. The most notable finding is that these effects are stronger at higher ranks, suggesting that effective counter-itemization is a form of skill expression rather than a general-purpose tool. Future work should examine a broader item pool, control for team composition, and explore counter-item purchase times and usage over the course of the match. 
 
 ---
 
 ## References
 
-<!-- deadlock-api.com data source -->
-<!-- Cramér's V citation -->
-<!-- BH correction citation (Benjamini & Hochberg, 1995) -->
-<!-- Any Deadlock patch notes or community sources cited -->
+[1] deadlock-api.com. *Deadlock Match History API*. https://deadlock-api.com. Accessed April–May 2026.
+
+[2] Cramér, H. (1946). *Mathematical Methods of Statistics*. Princeton University Press.
+
+[3] Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate: A practical and powerful approach to multiple testing. *Journal of the Royal Statistical Society: Series B*, 57(1), 289–300.
+
+---
+
+## AI Usage Statement
+
+This project was developed collaboratively with Claude, used as a technical partner throughout the analysis. Analytical direction, statistical interpretations, and narrative framing were guided by me based on empirical findings from the data and my knowledge of the game as a high rank player. Claude assisted with code generation, figure iteration, and proofreading at the author's request, but generation was intentional and proofread to maintain quality. The paper text is human-written, with small amounts of feedback from Claude on structure and typo fixing.
