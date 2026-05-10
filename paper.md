@@ -6,6 +6,8 @@
 
 ## Abstract
 
+Valve's Deadlock boasts a robust item system that provides players with opportunities to tailor their builds with counter items in order to gain advantages against enemy players. In this paper, we observe that tier 3 counter items, which are typically bought in the midgame, have mixed outcomes for those who buy them, depending on rank. High rank players have consistently higher winrates when buying items like Slowing Hex and Disarming Hex, while other counter items, which are potentially dwarfed by tier 4 items of a hybrid nature, have a neutral or even negative correlation with winrate. For low rank players, purchasing and holding tier 3 counter items without upgrading is generally a detriment over a benefit for all case studies. 
+
 ---
 
 ## 1. Introduction
@@ -80,7 +82,7 @@ With these counter items, we sought to investigate whether the identity of the p
 
 We see a particularly interesting trend with situational buyers when it comes to Slowing Hex and Mina. Among situational buyers, Slowing Hex holders facing Mina won 5.7% more frequently than non-holders (p = 0.029, V = 0.053). This suggests that core builders of slowing hex rely on the item to fill gaps in their abilities, and the presence of a character that exacerbates those weaknesses reduces winrate, even when the item is purchased. For situational buyers however, we see a notable increase in winrate of +5.7% when Mina is present, compared to no change when she is absent.
 
-For Dispel Magic, we see a different story. When core builders are present, the winrate increases. This is in stark contrast to slowing hex, where core builders suffered due to character presence. Situational buyers also show a modest benefit from the purchase, improving by 4.5% when Infernus is present compared to when he is absent, though this result does not reach statistical significance (p = 0.951).
+For Dispel Magic, we see a different story. When core builders are present, the winrate increases. This is in stark contrast to slowing hex, where core builders suffered due to character presence. Situational buyers also show a modest benefit from the purchase, improving by 4.6% when Infernus is present compared to when he is absent, though this result does not reach statistical significance (p = 0.951).
 
 Again with both weapon counter items, we see a significant dropoff when comparing whether the enemy is present or not. This is compounded by the data point that there are no core builders of either of these items. Metal Skin holders see a -8.1% delta when Vyper is absent, worsening to -10.3% when she is present. Disarming Hex holders drop from -9.6% to -8.4% — a marginal improvement but still deeply negative. This suggests that purchasing these items might offer a slight edge at the margin, but they remain less effective than buying a higher tier counter item.
 
